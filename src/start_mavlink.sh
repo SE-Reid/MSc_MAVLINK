@@ -16,6 +16,7 @@ mkdir -p ${LOG_DIR}
 
 # Source configuration
 if [ -f "${CONFIG_FILE}" ]; then
+    # shellcheck source=config.env.template
     source "${CONFIG_FILE}"
     echo "Loaded configuration from ${CONFIG_FILE}"
 else
@@ -66,7 +67,8 @@ if [ ${WAIT_COUNT} -eq 30 ]; then
     ls -la "${UART_DEVICE}" 2>/dev/null || echo "Device does not exist"
     echo "User groups: $(groups)"
     echo "Available serial devices:"
-    ls -la /dev/tty* | grep -E "(USB|ACM|AMA)" || echo "No serial devices found"
+    # Use find instead of ls | grep for better file handling
+    find /dev -name "tty*" \( -name "*USB*" -o -name "*ACM*" -o -name "*AMA*" \) -ls 2>/dev/null || echo "No serial devices found"
     exit 1
 fi
 
