@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Get changelog for this version
+          if [ -f CHANGELOG.md ]; then
+            # Extract changelog section for this version
+            sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | head -n -1 > release_notes.md
+            if [ ! -s release_notes.md ]; then
+              echo "### Changes" > release_notes.md
+              echo "See CHANGELOG.md for details." >> release_notes.md
+            fi
+          else
+            echo "### Release $VERSION" > release_notes.md
+            echo "MSc_MAVLINKRouting release." >> release_notes.md
+          fi
+      
+      - name: Create Release Archive
+        run: |
+          # Create release archive excluding development files
+          tar -czf MSc_MAVLINKRouting-${{ steps.changelog.outputs.version }}.tar.gz \
+            --exclude='.git*' \
+            --exclude='.github' \
+            --exclude='*.tar.gz' \
+            --exclude='REORGANIZATION.md' \
+            .
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: MSc_MAVLINKRouting ${{ steps.changelog.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./MSc_MAVLINKRouting-${{ steps.changelog.outputs.version }}.tar.gz
+          asset_name: MSc_MAVLINKRouting-${{ steps.changelog.outputs.version }}.tar.gz
+          asset_content_type: application/gzip

@@ -1,0 +1,37 @@
+[Unit]
+Description=MAVLink Router Service
+After=network.target serial-getty@ttyAMA0.service
+Wants=network.target
+Conflicts=serial-getty@ttyAMA0.service
+
+[Service]
+Type=simple
+User=mavlink
+Group=mavlink
+WorkingDirectory=/opt/mavlink
+ExecStart=/opt/mavlink/start_mavlink.sh
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=60
+TimeoutStopSec=30
+KillMode=mixed
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mavlink-router
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+Environment=PATH=/opt/mavlink/mavlink-venv/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/opt/mavlink/config.env
+
+# Security Settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/mavlink
+ReadWritePaths=/home/mavlink/.tilecache/SRTM3/
+ReadWritePaths=/opt/mavlink
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

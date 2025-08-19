@@ -1,0 +1,76 @@
+name: Bug Report
+description: Report a bug or issue with MSc_MAVLINKRouting
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form completely.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the issue you're experiencing...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command '...'
+        2. Check status with '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: The service should start successfully...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: The service failed to start with error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your system information
+      placeholder: |
+        - OS: Raspberry Pi OS (version)
+        - Python version: 3.x
+        - Hardware: Raspberry Pi 4
+        - MAVProxy version: x.x.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Any relevant log output
+      placeholder: |
+        Paste logs here (use sudo journalctl -u mavlink-router -n 50)
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem

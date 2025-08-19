@@ -1,0 +1,30 @@
+[Unit]
+Description=MAVLink Heartbeat Monitor
+After=mavlink-router.service
+Wants=mavlink-router.service
+
+[Service]
+Type=simple
+User=mavlink
+Group=mavlink
+WorkingDirectory=/opt/mavlink
+ExecStart=/usr/bin/python3 /opt/mavlink/heartbeat_monitor.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mavlink-heartbeat
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/mavlink/config.env
+
+# Security Settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/mavlink
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,115 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  shellcheck:
+    name: Shell Script Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './src'
+          additional_files: 'install.sh scripts/deploy.sh'
+          severity: warning
+
+  validation:
+    name: File Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Validate project structure
+        run: |
+          # Check required files exist
+          required_files=(
+            "install.sh"
+            "src/start_mavlink.sh"
+            "src/heartbeat_monitor.py"
+            "src/config.env.template"
+            "systemd/mavlink-router.service"
+            "systemd/mavlink-heartbeat.service"
+          )
+          
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required file: $file"
+              exit 1
+            fi
+          done
+          
+          echo "✓ All required files present"
+      
+      - name: Validate service files
+        run: |
+          # Check systemd service syntax
+          systemd-analyze verify systemd/*.service || echo "Warning: systemd-analyze not fully functional in CI"
+          
+          # Check for required sections
+          for service in systemd/*.service; do
+            if ! grep -q "\[Unit\]" "$service"; then
+              echo "Missing [Unit] section in $service"
+              exit 1
+            fi
+            if ! grep -q "\[Service\]" "$service"; then
+              echo "Missing [Service] section in $service"
+              exit 1
+            fi
+            if ! grep -q "\[Install\]" "$service"; then
+              echo "Missing [Install] section in $service"
+              exit 1
+            fi
+          done
+          
+          echo "✓ Service files validated"
+
+  python-validation:
+    name: Python Code Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pylint
+      
+      - name: Lint Python files
+        run: |
+          flake8 src/*.py --max-line-length=120 --ignore=E501
+          pylint src/*.py --disable=C0103,C0114,C0115,C0116 || true
+
+  deployment-test:
+    name: Deployment Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Test deployment script
+        run: |
+          chmod +x scripts/deploy.sh
+          # Run in development mode (should show instructions)
+          ./scripts/deploy.sh
+      
+      - name: Test install script syntax
+        run: |
+          chmod +x install.sh
+          # Just validate syntax, don't actually install
+          bash -n install.sh
+          echo "✓ Install script syntax valid"
