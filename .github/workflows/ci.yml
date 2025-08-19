@@ -104,8 +104,8 @@ jobs:
       - name: Test deployment script
         run: |
           chmod +x scripts/deploy.sh
-          # Run in development mode (should show instructions)
-          ./scripts/deploy.sh
+          # Run in CI mode (should show instructions without requiring sudo)
+          ./scripts/deploy.sh --ci-mode
       
       - name: Test install script syntax
         run: |

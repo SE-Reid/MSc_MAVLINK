@@ -7,15 +7,21 @@ set -e
 
 # Parse command line arguments
 SKIP_CONFIG=false
+CI_MODE=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --skip-config)
             SKIP_CONFIG=true
             shift
             ;;
+        --ci-mode)
+            CI_MODE=true
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [--skip-config] [--help]"
+            echo "Usage: $0 [--skip-config] [--ci-mode] [--help]"
             echo "  --skip-config  Skip interactive configuration"
+            echo "  --ci-mode      CI validation mode (no installation)"
             echo "  --help         Show this help message"
             exit 0
             ;;
@@ -125,7 +131,12 @@ EOF
 }
 
 # Check if we're on the target system or need to copy files
-if [ -d "/opt" ] && [ -d "/etc/systemd" ]; then
+# In CI mode, always treat as development system
+if [ "$CI_MODE" = true ]; then
+    echo "CI validation mode - treating as development system"
+    TARGET_MODE=false
+elif [ -d "/opt" ] && [ -d "/etc/systemd" ] && [ -f "/etc/debian_version" ]; then
+    # More specific check for Raspberry Pi/Debian systems
     echo "Detected target system (Linux with systemd)"
     TARGET_MODE=true
 else
@@ -238,7 +249,12 @@ else
         exit 1
     fi
     
-    echo ""
-    echo "Project structure:"
-    find "$PROJECT_ROOT" -type f -name "*.sh" -o -name "*.py" -o -name "*.service" -o -name "*.env*" -o -name "README.md" | sort
+    if [ "$CI_MODE" = true ]; then
+        echo ""
+        echo "✓ CI validation complete - all files validated successfully"
+    else
+        echo ""
+        echo "Project structure:"
+        find "$PROJECT_ROOT" -type f -name "*.sh" -o -name "*.py" -o -name "*.service" -o -name "*.env*" -o -name "README.md" | sort
+    fi
 fi
