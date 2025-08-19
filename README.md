@@ -2,7 +2,7 @@
 
 A robust MAVLink routing service for Raspberry Pi with automatic heartbeat monitoring and restart capabilities.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub License](https://img.shields.io/github/license/se-reid/MSc_MAVLINK)
 [![Release](https://img.shields.io/github/v/release/your-username/MSc_MAVLINKRouting)](https://github.com/your-username/MSc_MAVLINKRouting/releases)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/se-reid/MSc_MAVLINK/ci.yml)
 
